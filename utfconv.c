@@ -1,3 +1,6 @@
+/* Mauricio Pedro Silva Gonçalves Vieira - 1311101 - 3WB */
+/* Victor Augusto ______________________ - _______ - 3WB */
+
 #include "utfconv.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,7 +9,7 @@
 #define  mascara_continuacao 0x3F
 
 
-void separa_bytes (unsigned char * b_utf32, unsigned int utf32, unsigned int n){
+void separa_bytes (unsigned char* b_utf32, unsigned int utf32, unsigned int n){
 	
 	int i, aux, mascara_separa = 0x000000FF;
 
@@ -19,7 +22,7 @@ void separa_bytes (unsigned char * b_utf32, unsigned int utf32, unsigned int n){
 	}
 }
 
-void imprime_bom (FILE *arq_saida, unsigned char * bom, char ordem){
+void imprime_bom (FILE* arq_saida, unsigned char* bom, char ordem){
 
 	int i;
 	
@@ -34,7 +37,7 @@ void imprime_bom (FILE *arq_saida, unsigned char * bom, char ordem){
 
 }
 
-void imprime_bytes (FILE *arq_saida, unsigned char * b_utf32, unsigned int n, char ordem){
+void imprime_bytes (FILE* arq_saida, unsigned char* b_utf32, unsigned int n, char ordem){
 
 	int i;
 	char c = 0;
@@ -51,11 +54,13 @@ void imprime_bytes (FILE *arq_saida, unsigned char * b_utf32, unsigned int n, ch
 		for(i= (4-n); i>0 ; i--)
 			fprintf(arq_saida, "%c", c);
 
-		for(i=0; i<n; i++)
+		for(i= n-1; i>-1; i--)
 			fprintf(arq_saida, "%c", b_utf32[i]);
 	}
-	else
+	else{
 		fprintf(stderr, "Erro de codificacao na passagem do parametro\n");
+		return;
+	}
 
 }
 
@@ -66,7 +71,7 @@ int testa_byte_continuacao ( unsigned char byte){
 	return 0;
 }
 
-int soma_bytes_continuacao (FILE *arq_entrada, unsigned char * utf8, unsigned int n, unsigned int * contador_erro){
+int soma_bytes_continuacao (FILE* arq_entrada, unsigned char* utf8, unsigned int n, unsigned int* contador_erro){
 	int i, soma, aux;
 	soma = 0;
 
@@ -94,7 +99,7 @@ int soma_bytes_continuacao (FILE *arq_entrada, unsigned char * utf8, unsigned in
 }
 
 
-int conv8_32 (FILE *arq_entrada, FILE *arq_saida, char ordem){
+int conv8_32 (FILE* arq_entrada, FILE* arq_saida, char ordem){
 
 	unsigned char utf8[4], b_utf32[4];
 	unsigned int utf32, soma, n_bytes, contador_erro = 0;

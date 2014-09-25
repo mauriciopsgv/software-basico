@@ -4,9 +4,12 @@
 #include "utfconv.h"
 #include <stdio.h>
 #include <stdlib.h>
-#define  mascara_bc_up 0xBF
-#define	 mascara_bc_down 0x80
-#define  mascara_continuacao 0x3F
+#define  MASCARA_BC_UP 0xBF
+#define	 MASCARA_BC_DOWN 0x80
+#define  MASCARA_CONTINUACAO 0x3F
+#define	 TAM_BOM 4
+#define  ID_CONTINUACAO 0x80
+#define  LIM_UTF32 0x3FFFFF
 
 
 char checa_bom (FILE* arq_entrada, int* contador_erro){
@@ -84,7 +87,7 @@ int determina_n (unsigned int utf32){
 
 int testa_byte_continuacao ( unsigned char byte){
 
-	if( byte <= mascara_bc_up && byte >= mascara_bc_down)
+	if( byte <= MASCARA_BC_UP && byte >= MASCARA_BC_DOWN)
 		return 1;
 	return 0;
 }
@@ -100,7 +103,7 @@ int soma_bytes_continuacao (FILE* arq_entrada, unsigned char* utf8, unsigned int
 
 		if( testa_byte_continuacao(utf8[i]) ){
 			
-			utf8[i] = utf8[i] & mascara_continuacao;
+			utf8[i] = utf8[i] & MASCARA_CONTINUACAO;
 			aux = (unsigned int) utf8[i];
 			aux = aux << ( (n-i-1)*6 );
 			soma += aux;

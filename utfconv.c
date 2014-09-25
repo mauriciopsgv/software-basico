@@ -314,7 +314,7 @@ int conv32_8(FILE *arq_entrada, FILE *arq_saida){
 		}
 		if(	n_leitura > 0){
 			fprintf(stderr, "O numero de bytes do arquivo excede em %d bytes o devido para a leitura correta do arquivo", n_leitura);
-
+			return -1;
 		}
 	}
 
@@ -349,8 +349,8 @@ int conv32_8(FILE *arq_entrada, FILE *arq_saida){
 		}
 
 		if(	n_leitura > 0){
-		fprintf(stderr, "O numero de bytes do arquivo excede em %d bytes o devido para a leitura correta do arquivo", n_leitura);
-
+			fprintf(stderr, "O numero de bytes do arquivo excede em %d bytes o devido para a leitura correta do arquivo", n_leitura);
+			return -1;
 		}
 	}
 

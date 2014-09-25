@@ -5,7 +5,7 @@
 #define ID_CONTINUACAO 0x80
 #define LIM_UTF32 0x3FFFFF
 
-int bytes_to_int (unsigned char* bytes){
+int bytes_to_int (unsigned char* bytes, int contador_erro){
 
 	int i, utf32=0;
 
@@ -15,7 +15,7 @@ int bytes_to_int (unsigned char* bytes){
 	}
 
 	if(utf32 > 0x10FFFF){
-		fprintf(stderr, "Erro de codificacao do arquivo de entrada\n");
+		fprintf(stderr, "Erro de codificacao do arquivo de entrada no byte numero %d\n", contador_erro);
 		return -1;
 	}
 
@@ -36,7 +36,6 @@ int determina_n (unsigned int utf32){
 
 void separa_bytes_6 (unsigned char* b_utf32, unsigned int utf32, int n, unsigned int mascara_separa){
 	
-	// no vetor o numero fica armazenado em little endian
 	int i, j, aux;
 
 	for(i=0, j=3 ; i<n; i++, j--){
@@ -112,9 +111,9 @@ int conv32_8(FILE *arq_entrada, FILE *arq_saida){
 		return -1;
 	
 	if(ordem == 'L'){
-		while( fscanf(arq_entrada, "%c%c%c%c", &b_utf32[3], &b_utf32[2], &b_utf32[1], &b_utf32[0]) != 0){
+		while( fscanf(arq_entrada, "%c%c%c%c", &b_utf32[3], &b_utf32[2], &b_utf32[1], &b_utf32[0]) == 4){
 
-			utf32 = bytes_to_int( b_utf32 );
+			utf32 = bytes_to_int( b_utf32 , contador_erro);
 			if(utf32 == -1)
 				return -1;
 			n_bytes = determina_n(utf32);
@@ -124,16 +123,19 @@ int conv32_8(FILE *arq_entrada, FILE *arq_saida){
 			else
 				separa_bytes_6( b_utf32, utf32, 4, 0x3F);
 
-			imprime_primeiro(arq_saida, b_utf32[3], n_bytes);
-			imprime_continuacao(arq_saida, b_utf32, n_bytes);
+			imprime_primeiro(arq_saida, b_utf32[4 - n_bytes], n_bytes);
+
+			if(n_bytes > 1)
+				imprime_continuacao(arq_saida, b_utf32, n_bytes);
+
 			contador_erro += 4;
 		}
 	}
 	else
 	{
-		while( fscanf(arq_entrada, "%c%c%c%c", &b_utf32[0], &b_utf32[1], &b_utf32[2], &b_utf32[3]) != 0){
+		while( fscanf(arq_entrada, "%c%c%c%c", &b_utf32[0], &b_utf32[1], &b_utf32[2], &b_utf32[3]) == 4){
 
-			utf32 = bytes_to_int( b_utf32 );
+			utf32 = bytes_to_int( b_utf32 , contador_erro);
 			if(utf32 == -1)
 				return -1;
 
@@ -144,8 +146,11 @@ int conv32_8(FILE *arq_entrada, FILE *arq_saida){
 			else
 				separa_bytes_6( b_utf32, utf32, 4, 0x3F);
 		
-			imprime_primeiro(arq_saida, b_utf32[3], n_bytes);
-			imprime_continuacao(arq_saida, b_utf32, n_bytes);
+			imprime_primeiro(arq_saida, b_utf32[4 - n_bytes], n_bytes);
+
+			if(n_bytes > 1)
+				imprime_continuacao(arq_saida, b_utf32, n_bytes);
+			
 			contador_erro += 4;
 		}
 	}

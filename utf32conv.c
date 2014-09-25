@@ -103,15 +103,19 @@ int conv32_8(FILE *arq_entrada, FILE *arq_saida){
 
 	char ordem;
 	unsigned char b_utf32[4];
-	int contador_erro=0, n_bytes;
+	int contador_erro=0, n_bytes, n_leitura;
 	unsigned int utf32;
 
 	ordem = checa_bom( arq_entrada, &contador_erro );
 	if(ordem == -1)
 		return -1;
 	
+
 	if(ordem == 'L'){
-		while( fscanf(arq_entrada, "%c%c%c%c", &b_utf32[3], &b_utf32[2], &b_utf32[1], &b_utf32[0]) == 4){
+
+		n_leitura = fscanf(arq_entrada, "%c%c%c%c", &b_utf32[3], &b_utf32[2], &b_utf32[1], &b_utf32[0]);	
+
+		while( n_leitura == 4){
 
 			utf32 = bytes_to_int( b_utf32 , contador_erro);
 			if(utf32 == -1)
@@ -129,11 +133,23 @@ int conv32_8(FILE *arq_entrada, FILE *arq_saida){
 				imprime_continuacao(arq_saida, b_utf32, n_bytes);
 
 			contador_erro += 4;
+			n_leitura = fscanf(arq_entrada, "%c%c%c%c", &b_utf32[3], &b_utf32[2], &b_utf32[1], &b_utf32[0]);
+
+		}
+		if(	n_leitura > 0){
+			fprintf(stderr, "O numero de bytes do arquivo excede em %d bytes o devido para a leitura correta do arquivo", n_leitura);
+
 		}
 	}
+
+
+
+
 	else
-	{
-		while( fscanf(arq_entrada, "%c%c%c%c", &b_utf32[0], &b_utf32[1], &b_utf32[2], &b_utf32[3]) == 4){
+	{	
+		n_leitura = fscanf(arq_entrada, "%c%c%c%c", &b_utf32[0], &b_utf32[1], &b_utf32[2], &b_utf32[3]);
+
+		while( n_leitura == 4){
 
 			utf32 = bytes_to_int( b_utf32 , contador_erro);
 			if(utf32 == -1)
@@ -152,6 +168,13 @@ int conv32_8(FILE *arq_entrada, FILE *arq_saida){
 				imprime_continuacao(arq_saida, b_utf32, n_bytes);
 			
 			contador_erro += 4;
+			n_leitura = fscanf(arq_entrada, "%c%c%c%c", &b_utf32[0], &b_utf32[1], &b_utf32[2], &b_utf32[3]);
+
+		}
+
+		if(	n_leitura > 0){
+		fprintf(stderr, "O numero de bytes do arquivo excede em %d bytes o devido para a leitura correta do arquivo", n_leitura);
+
 		}
 	}
 

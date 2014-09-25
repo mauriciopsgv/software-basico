@@ -216,9 +216,9 @@ int conv8_32 (FILE* arq_entrada, FILE* arq_saida, char ordem){
 		else if( utf8[0] <= 0xDF && utf8[0] >= 0xC0)
 		{
 			n_bytes = 2;
-			utf8[0] = utf8[0] & 0x1F; // 00011111
+			utf8[0] = utf8[0] & 0x1F;
 			utf32 = (unsigned int) utf8[0];
-			utf32 = utf32 << 6;	// 00000000 00011111 - > 00000111 11000000
+			utf32 = utf32 << 6;
 
 			soma = soma_bytes_continuacao(arq_entrada, utf8, n_bytes, &contador_erro);
 			if(soma == -1)
@@ -279,15 +279,19 @@ int conv32_8(FILE *arq_entrada, FILE *arq_saida){
 
 	char ordem;
 	unsigned char b_utf32[4];
-	int contador_erro=0, n_bytes;
+	int contador_erro=0, n_bytes, n_leitura;
 	unsigned int utf32;
 
 	ordem = checa_bom( arq_entrada, &contador_erro );
 	if(ordem == -1)
 		return -1;
 	
+
 	if(ordem == 'L'){
-		while( fscanf(arq_entrada, "%c%c%c%c", &b_utf32[3], &b_utf32[2], &b_utf32[1], &b_utf32[0]) == 4){
+
+		n_leitura = fscanf(arq_entrada, "%c%c%c%c", &b_utf32[3], &b_utf32[2], &b_utf32[1], &b_utf32[0]);	
+
+		while( n_leitura == 4){
 
 			utf32 = bytes_to_int( b_utf32 , contador_erro);
 			if(utf32 == -1)
@@ -305,11 +309,23 @@ int conv32_8(FILE *arq_entrada, FILE *arq_saida){
 				imprime_continuacao(arq_saida, b_utf32, n_bytes);
 
 			contador_erro += 4;
+			n_leitura = fscanf(arq_entrada, "%c%c%c%c", &b_utf32[3], &b_utf32[2], &b_utf32[1], &b_utf32[0]);
+
+		}
+		if(	n_leitura > 0){
+			fprintf(stderr, "O numero de bytes do arquivo excede em %d bytes o devido para a leitura correta do arquivo", n_leitura);
+
 		}
 	}
+
+
+
+
 	else
-	{
-		while( fscanf(arq_entrada, "%c%c%c%c", &b_utf32[0], &b_utf32[1], &b_utf32[2], &b_utf32[3]) == 4){
+	{	
+		n_leitura = fscanf(arq_entrada, "%c%c%c%c", &b_utf32[0], &b_utf32[1], &b_utf32[2], &b_utf32[3]);
+
+		while( n_leitura == 4){
 
 			utf32 = bytes_to_int( b_utf32 , contador_erro);
 			if(utf32 == -1)
@@ -328,6 +344,13 @@ int conv32_8(FILE *arq_entrada, FILE *arq_saida){
 				imprime_continuacao(arq_saida, b_utf32, n_bytes);
 			
 			contador_erro += 4;
+			n_leitura = fscanf(arq_entrada, "%c%c%c%c", &b_utf32[0], &b_utf32[1], &b_utf32[2], &b_utf32[3]);
+
+		}
+
+		if(	n_leitura > 0){
+		fprintf(stderr, "O numero de bytes do arquivo excede em %d bytes o devido para a leitura correta do arquivo", n_leitura);
+
 		}
 	}
 

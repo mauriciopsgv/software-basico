@@ -121,7 +121,6 @@ int soma_bytes_continuacao (FILE* arq_entrada, unsigned char* utf8, unsigned int
 
 void separa_bytes (unsigned char* b_utf32, unsigned int utf32, unsigned int n){
 	
-	// no vetor o numero fica armazenado em little endian
 	int i, aux, mascara_separa = 0x000000FF;
 
 	for(i=0; i<n; i++){

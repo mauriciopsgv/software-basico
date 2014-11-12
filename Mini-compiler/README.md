@@ -2,7 +2,7 @@ What this program does?
 
   This program compile programs written in the language Minima (created by the teacher just for the work). 
   
-  This language's syntax can be formally defined by:
+  Minima's syntax can be formally defined by:
     
     func	::	cmd '\n' | cmd '\n' func
     

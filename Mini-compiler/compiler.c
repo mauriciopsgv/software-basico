@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "compiler.h"
 #define	NUMERO_BEM_GRANDE 1000
+#define NUM_VAR_LOCAIS 5
 
 typedef unsigned char * Code;
 
@@ -16,8 +17,9 @@ int initialize_code (Code codigo){
 
 	codigo[0] = 0x55;							// push %ebp
 	codigo[1] = 0x89; 	codigo[2] = 0xe5;		// mov %esp, %ebp
+	codigo[3] = 0x83;	codigo[4] = 0xec;	codigo[5] = 0x14;
 
-	return 3;
+	return 6;
 }
 
 void finalize_code (Code codigo, int cont_cod){
@@ -27,9 +29,21 @@ void finalize_code (Code codigo, int cont_cod){
 	codigo[++cont_cod] = 0xc3;									// ret
 }
 
-void read_ret (FILE* arq_fonte, Code codigo, int cont_cod){
+int gibe_me_my_index ( int * ordem_var_local, int n){
 
 	int i;
+	for(i=0; i < NUM_VAR_LOCAIS ; i++)
+	{
+		if( ordem_var_local[i] == n)
+			return i;		
+	}
+
+	return -1;
+} 
+
+void read_ret (FILE* arq_fonte, Code codigo, int cont_cod, int* ordem_var_local){
+
+	int i, ordem;
 	char c;
 	N_union num;
 	fscanf( arq_fonte, "et %c%d", &c, &num.i );
@@ -54,12 +68,19 @@ void read_ret (FILE* arq_fonte, Code codigo, int cont_cod){
 			codigo[cont_cod++] = 0x8b;
 			codigo[cont_cod++] = 0x45;
 			codigo[cont_cod++] = (0x08 + (num.i)*4 );
+
 			break;
 			//cont_cod = ultimo indice que imprimiu + 1 quando sai daqui
 		}
 
 		case 'v':
 		{
+			ordem = gibe_me_my_index(ordem_var_local, num.i);
+
+			codigo[cont_cod++] = 0x8b;
+			codigo[cont_cod++] = 0x45;
+			codigo[cont_cod++] = (0xfc - (ordem)*4 );
+
 			break;
 		}
 
@@ -72,13 +93,12 @@ void read_ret (FILE* arq_fonte, Code codigo, int cont_cod){
 }
 
 
-
-
-int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c){
+int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_local, int* cont_var_local){
 
 	int i;
 	char c1,c2, op;
 	N_union o, o1, o2;
+
 
 	fscanf(arq_fonte, "%d := %c%d %c %c%d", &o.i, &c1, &o1.i, &op , &c2, &o2.i);
 
@@ -144,6 +164,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c){
 
 		case 'v':
 		{
+
 			break;
 		}
 
@@ -159,6 +180,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c){
 			codigo[cont_cod++] = 0xca;
 			break;
 			//cont_cod ja pronto pra acessar
+			//resultado da soma sempre em edx
 		}
 
 		case '-':
@@ -186,7 +208,8 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c){
 
 		case 'v':
 		{
-
+			codigo[cont_cod++] = 0x52;
+			ordem_var_local[(*cont_var_local)++] = o.i;
 		}
 	}
 
@@ -196,7 +219,8 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c){
 
 funcp geracod(FILE* arq_fonte){
 
-	int c, cont_cod;
+	int c, cont_cod,  ordem_var_local[5], cont_var_local = 0;
+
 	Code codigo = (Code) malloc(NUMERO_BEM_GRANDE);
 
 	cont_cod = initialize_code(codigo);
@@ -207,13 +231,13 @@ funcp geracod(FILE* arq_fonte){
 		{
 			case 'r':
 			{
-				read_ret(arq_fonte, codigo, cont_cod);
+				read_ret(arq_fonte, codigo, cont_cod, ordem_var_local);
 				break;
 			}
 
 			case 'v': case 'p':
 			{
-				cont_cod = read_att(arq_fonte, codigo, cont_cod, c);
+				cont_cod = read_att(arq_fonte, codigo, cont_cod, c, ordem_var_local, &cont_var_local);
 			}
 		}
 

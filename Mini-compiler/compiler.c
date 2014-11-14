@@ -99,6 +99,11 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c){
 
 		case 'p':
 		{
+			codigo[cont_cod++] = 0x8b;
+			codigo[cont_cod++] = 0x4d;
+			codigo[cont_cod++] = (0x08 + (o1.i)*4 );
+			//cont_cod pronto pra acesso (valor do primeiro indice em branco)
+
 			break;
 		}
 
@@ -129,6 +134,11 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c){
 
 		case 'p':
 		{
+			codigo[cont_cod++] = 0x8b;
+			codigo[cont_cod++] = 0x55;
+			codigo[cont_cod++] = (0x08 + (o2.i)*4 );
+			//cont_cod pronto pra acesso (valor do primeiro indice em branco)
+			
 			break;
 		}
 

@@ -24,7 +24,8 @@ int initialize_code (Code codigo){
 
 void finalize_code (Code codigo, int cont_cod){
 
-	codigo[cont_cod] =  0x89;	codigo[++cont_cod] = 0xec;		// mov %ebp, %esp
+	codigo[cont_cod] = 0x5a;
+	codigo[++cont_cod] =  0x89;	codigo[++cont_cod] = 0xec;		// mov %ebp, %esp
 	codigo[++cont_cod] = 0x5d;									// pop %ebp
 	codigo[++cont_cod] = 0xc3;									// ret
 }
@@ -208,7 +209,9 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 
 		case 'v':
 		{
-			codigo[cont_cod++] = 0x52;
+			codigo[cont_cod++] = 0x8b;
+			codigo[cont_cod++] = 0x45;
+			codigo[cont_cod++] = 0xfc; //precisa mudar isso
 			ordem_var_local[(*cont_var_local)++] = o.i;
 		}
 	}
@@ -241,6 +244,7 @@ funcp geracod(FILE* arq_fonte){
 			}
 		}
 
+		printf("cont_var_local = %d\n ordem_var_local[0] = %d\n", cont_var_local, ordem_var_local[0]);
 		fscanf(arq_fonte, " ");
 	}
 	

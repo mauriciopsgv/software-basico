@@ -97,6 +97,7 @@ void read_ret (FILE* arq_fonte, Code codigo, int cont_cod, int* ordem_var_local)
 int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_local, int* cont_var_local){
 
 	int i;
+	int ordem;
 	char c1,c2, op;
 	N_union o, o1, o2;
 
@@ -130,6 +131,12 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 
 		case 'v':
 		{
+			ordem = gibe_me_my_index(ordem_var_local, o1.i);
+
+			codigo[cont_cod++] = 0x8b;
+			codigo[cont_cod++] = 0x4d;
+			codigo[cont_cod++] = (0xfc - (ordem)*4 );
+
 			break;
 		}
 
@@ -165,7 +172,11 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 
 		case 'v':
 		{
+			ordem = gibe_me_my_index(ordem_var_local, o2.i);
 
+			codigo[cont_cod++] = 0x8b;
+			codigo[cont_cod++] = 0x55;
+			codigo[cont_cod++] = (0xfc - (ordem)*4 );
 			break;
 		}
 
@@ -193,6 +204,9 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 
 		case '*':
 		{
+			codigo[cont_cod++] = 0x0f;
+			codigo[cont_cod++] = 0xaf;
+			codigo[cont_cod++] = 0xca;
 			break;
 		}
 

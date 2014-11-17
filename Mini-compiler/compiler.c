@@ -178,7 +178,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 		case '+':
 		{
 			codigo[cont_cod++] = 0x01;
-			codigo[cont_cod++] = 0xca;
+			codigo[cont_cod++] = 0xd1;
 			break;
 			//cont_cod ja pronto pra acessar
 			//resultado da soma sempre em edx
@@ -186,6 +186,8 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 
 		case '-':
 		{
+			codigo[cont_cod++] = 0x29;
+			codigo[cont_cod++] = 0xd1;
 			break;
 		}
 
@@ -202,15 +204,15 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 
 		case 'p':
 		{
-			codigo[cont_cod++] = 0x8b;
-			codigo[cont_cod++] = 0x45;
+			codigo[cont_cod++] = 0x89;
+			codigo[cont_cod++] = 0x4d;
 			codigo[cont_cod++] = (0x08 + (o.i)*4 );
 		}
 
 		case 'v':
 		{
 			codigo[cont_cod++] = 0x89;
-			codigo[cont_cod++] = 0x55;
+			codigo[cont_cod++] = 0x4d;
 			codigo[cont_cod++] = 0xfc - 4*(*cont_var_local); //precisa mudar isso
 			ordem_var_local[(*cont_var_local)++] = o.i;
 		}

@@ -103,7 +103,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 
 	fscanf(arq_fonte, "%d := %c%d %c %c%d", &o.i, &c1, &o1.i, &op , &c2, &o2.i);
 
-	switch(c1){
+	switch(c1){ //coloco em ecx
 
 		case '$':
 		{
@@ -137,7 +137,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 			fprintf(stderr, "Simbolo invalido\n");
 	}
 
-	switch(c2){
+	switch(c2){ // coloco em edx
 
 
 		case '$':
@@ -202,16 +202,16 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 
 		case 'p':
 		{
-			codigo[cont_cod++] = 0x89;
-			codigo[cont_cod++] = 0x55;
+			codigo[cont_cod++] = 0x8b;
+			codigo[cont_cod++] = 0x45;
 			codigo[cont_cod++] = (0x08 + (o.i)*4 );
 		}
 
 		case 'v':
 		{
-			codigo[cont_cod++] = 0x8b;
-			codigo[cont_cod++] = 0x45;
-			codigo[cont_cod++] = 0xfc; //precisa mudar isso
+			codigo[cont_cod++] = 0x89;
+			codigo[cont_cod++] = 0x55;
+			codigo[cont_cod++] = 0xfc - 4*(*cont_var_local); //precisa mudar isso
 			ordem_var_local[(*cont_var_local)++] = o.i;
 		}
 	}
@@ -244,7 +244,6 @@ funcp geracod(FILE* arq_fonte){
 			}
 		}
 
-		printf("cont_var_local = %d\n ordem_var_local[0] = %d\n", cont_var_local, ordem_var_local[0]);
 		fscanf(arq_fonte, " ");
 	}
 	

@@ -31,8 +31,16 @@ Line * cria_no ( Line * iterador_lista, int wanted_line, int index_to_change){
 	lista->wanted_line = wanted_line;
 	lista->index_to_change = index_to_change;
 	lista->prox = iterador_lista;
+	lista->ant = NULL;
 
 	return lista;
+}
+
+void printList(Line* l)
+{
+	if(!l)return;
+	printf("%d %d->",l->wanted_line,l->index_to_change);
+	printList(l->prox);
 }
 
 Line* destroi_no(Line* iterador_lista, Line * node_to_delete){
@@ -479,6 +487,7 @@ funcp geracod(FILE* arq_fonte,int* NAO_ESQ_DE_TIRAR_ISSO){
 
 		fscanf(arq_fonte, " ");
 
+		printList(iterador_lista);
 		if( iterador_lista != NULL ){
 
 			structure_to_change = check_line(iterador_lista, line);
@@ -486,6 +495,8 @@ funcp geracod(FILE* arq_fonte,int* NAO_ESQ_DE_TIRAR_ISSO){
 			if( structure_to_change != NULL )
 			{
 				printf(">>>>>>> %d %d\n",lines[structure_to_change->wanted_line],((structure_to_change->index_to_change) + 4));
+
+
 				number_to_write.i = lines[structure_to_change->wanted_line ] - ((structure_to_change->index_to_change) + 4);
 
 				write_number(codigo, structure_to_change->index_to_change , number_to_write);

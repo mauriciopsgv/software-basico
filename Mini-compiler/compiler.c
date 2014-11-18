@@ -22,8 +22,7 @@ typedef struct line_if{
 
 } Line;
 
-Line * cria_no ( Line * iterador_lista, int wanted_line, int index_to_change)
-{
+Line * cria_no ( Line * iterador_lista, int wanted_line, int index_to_change){
 	Line * lista = (Line *) malloc(sizeof(Line));
 
 	if(iterador_lista != NULL)
@@ -40,19 +39,12 @@ Line* destroi_no (Line * iterador_lista){
 
 	Line * temp;
 
-	if( iterador_lista->ant == NULL)
-	{
-		temp = iterador_lista->prox;
-		temp->ant = NULL;
-		free(iterador_lista)
-	}
-	else
-	{
-		temp = iterador_lista->ant;
-		temp->prox = iterador_lista->prox;
-		free(iterador_lista);
-	}
+	if(iterador_lista->ant != NULL)
+		iterador_lista->ant->prox = iterador_lista->prox;
+	if(iterador_lista->prox != NULL)
+		iterador_lista->prox->ant = iterador_lista->ant;
 
+	free(iterador_lista);
 	return temp;
 }
 
@@ -61,7 +53,7 @@ int check_line ( Line * iterador_lista, int line){
 	int i;
 
 	if( iterador_lista == NULL)
-		return 0;
+		return -1;
 
 	if( iterador_lista->wanted_line == line)
 	{	
@@ -70,31 +62,35 @@ int check_line ( Line * iterador_lista, int line){
 		return i;
 	}
 
-	check_line( iterador_lista-> prox, line);
+	return check_line(iterador_lista-> prox, line);
 }
 
+int write_number (Code codigo, int index_to_change, N_union number_to_write)
+{
+	int i;
 
+	for(i=0, index_to_change; i<4; i++, index_to_change++)
+		codigo[index_to_change] = number_to_write.b[i];
+
+	return index_to_change;
+}
 
 int initialize_code (Code codigo, int * lines){
 
 	codigo[0] = 0x55;							// push %ebp
-	lines[0] = 0;
-	
 	codigo[1] = 0x89; 	codigo[2] = 0xe5;		// mov %esp, %ebp
-	lines[1] = 1;
-
 	codigo[3] = 0x83;	codigo[4] = 0xec;	codigo[5] = 0x14;
-	lines[2] = 3;
 
 	return 6;
 }
 
-void finalize_code (Code codigo, int cont_cod){
+int finalize_code (Code codigo, int cont_cod){
 
-	codigo[cont_cod] = 0x5a;
-	codigo[++cont_cod] =  0x89;	codigo[++cont_cod] = 0xec;		// mov %ebp, %esp
-	codigo[++cont_cod] = 0x5d;									// pop %ebp
-	codigo[++cont_cod] = 0xc3;									// ret
+	codigo[cont_cod++] = 0x89;	codigo[cont_cod++] = 0xec;		// mov %ebp, %esp
+	codigo[cont_cod++] = 0x5d;									// pop %ebp
+	codigo[cont_cod++] = 0xc3;									// ret
+
+	return cont_cod;
 }
 
 int gibe_me_my_index ( int * ordem_var_local, int n){
@@ -109,9 +105,10 @@ int gibe_me_my_index ( int * ordem_var_local, int n){
 	return -1;
 } 
 
-void read_ret (FILE* arq_fonte, Code codigo, int cont_cod, int* ordem_var_local){
+int read_ret (FILE* arq_fonte, Code codigo, int cont_cod, int* ordem_var_local){
 
-	int i, ordem;
+	int i;
+	int ordem;
 	char c;
 	N_union num;
 	fscanf( arq_fonte, "et %c%d", &c, &num.i );
@@ -120,13 +117,15 @@ void read_ret (FILE* arq_fonte, Code codigo, int cont_cod, int* ordem_var_local)
 	{
 		case '$':
 		{
-			codigo[cont_cod] = 0xb8;
-			cont_cod++;
+			codigo[cont_cod++] = 0xb8;
+
+//			cont_cod = write_number(codigo, cont_cod , num);
 
 			for(i=0 , cont_cod; i<4; i++, cont_cod++)
 			{
 				codigo[cont_cod]= num.b[i];
 			}
+
 			break;
 			//cont_cod = ultimo indice que imprimiu + 1 quando sai daqui
 		}
@@ -156,7 +155,7 @@ void read_ret (FILE* arq_fonte, Code codigo, int cont_cod, int* ordem_var_local)
 			fprintf(stderr, "Simbolo invalido\n");
 	}
 
-	finalize_code(codigo, cont_cod);
+	return finalize_code(codigo, cont_cod);
 }
 
 int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_local, int* cont_var_local){
@@ -175,12 +174,16 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 		{
 			codigo[cont_cod++] = 0xb9;
 
+//			cont_cod = write_number(codigo, cont_cod , o1);
+
 			for(i=0 , cont_cod; i<4; i++, cont_cod++)
 			{
 				codigo[cont_cod]= o1.b[i];
 			}
+			
 			// quando sair desse for o contador ja estara pronto para ser indice 
 			// de um proximo uso no codigo
+			
 			break;
 		}
 
@@ -189,6 +192,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 			codigo[cont_cod++] = 0x8b;
 			codigo[cont_cod++] = 0x4d;
 			codigo[cont_cod++] = (0x08 + (o1.i)*4 );
+			
 			//cont_cod pronto pra acesso (valor do primeiro indice em branco)
 
 			break;
@@ -216,10 +220,13 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 		{
 			codigo[cont_cod++] = 0xba;
 
+//			cont_cod = write_number(codigo, cont_cod , o2);
+
 			for(i=0 , cont_cod; i<4; i++, cont_cod++)
 			{
 				codigo[cont_cod]= o2.b[i];
 			}
+
 			// quando sair desse for o contador ja estara pronto para ser indice 
 			// de um proximo uso no codigo
 			break;
@@ -290,10 +297,21 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 
 		case 'v':
 		{
-			codigo[cont_cod++] = 0x89;
-			codigo[cont_cod++] = 0x4d;
-			codigo[cont_cod++] = 0xfc - 4*(*cont_var_local); //precisa mudar isso
-			ordem_var_local[(*cont_var_local)++] = o.i;
+			ordem = gibe_me_my_index(ordem_var_local, o.i);
+
+			if(ordem == -1){
+				codigo[cont_cod++] = 0x89;
+				codigo[cont_cod++] = 0x4d;
+				codigo[cont_cod++] = 0xfc - 4*(*cont_var_local); //precisa mudar isso
+				ordem_var_local[(*cont_var_local)++] = o.i;
+			}
+
+			else
+			{
+				codigo[cont_cod++] = 0x89;
+				codigo[cont_cod++] = 0x4d;
+				codigo[cont_cod++] = 0xfc - 4*(ordem); //precisa mudar isso
+			}
 		}
 	}
 
@@ -310,8 +328,9 @@ int add_cmpl (Code codigo, int cont_cod){
 
 int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, int * cont_var_local, Line** iterador_lista){
 
+	int i;
 	char c1, c2;
-	int i, ordem, wanted_line;
+	int ordem, wanted_line;
 	N_union o1, o2;
 
 	fscanf(arq_fonte, "feq %c%d %c%d %d", &c1, &o1.i, &c2, &o2.i, &wanted_line);
@@ -322,10 +341,8 @@ int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, 
 		{
 			codigo[cont_cod++] = 0xb9;
 
-			for(i=0 , cont_cod; i<4; i++, cont_cod++)
-			{
-				codigo[cont_cod]= o1.b[i];
-			}
+			cont_cod = write_number(codigo, cont_cod , o1);
+
 			// quando sair desse for o contador ja estara pronto para ser indice 
 			// de um proximo uso no codigo
 			break;
@@ -363,12 +380,11 @@ int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, 
 		{
 			codigo[cont_cod++] = 0xba;
 
-			for(i=0 , cont_cod; i<4; i++, cont_cod++)
-			{
-				codigo[cont_cod]= o2.b[i];
-			}
+			cont_cod = write_number(codigo, cont_cod , o2);
+
 			// quando sair desse for o contador ja estara pronto para ser indice 
 			// de um proximo uso no codigo
+
 			break;
 		}
 
@@ -400,10 +416,10 @@ int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, 
 
 	codigo[cont_cod++] = 0x0f;
 	codigo[cont_cod++] = 0x84;
-	//codigo[cont_cod++] = 00;
-	//codigo[cont_cod++] = 00;
-	//codigo[cont_cod++] = 00;
-	//codigo[cont_cod++] = 00;
+	codigo[cont_cod] = 0xFF;
+	codigo[cont_cod+1] = 0xFF;
+	codigo[cont_cod+2] = 0xFF;
+	codigo[cont_cod+3] = 0xFF;
 
 
 
@@ -412,24 +428,22 @@ int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, 
 	/*Essa parte do código é o número da primeira instrução menos o número
 	da instrução imediatamente depois */
 
-	return cont_cod;
+	return cont_cod + 4;
 }
 
 
 
-funcp geracod(FILE* arq_fonte){
+funcp geracod(FILE* arq_fonte,int* NAO_ESQ_DE_TIRAR_ISSO){
 
-	int i, c, cont_cod,  ordem_var_local[5], cont_var_local = 0, line = 3, index_to_change;
+	int c, cont_cod,  ordem_var_local[5], cont_var_local = 0, line = 1, index_to_change;
 
-	int lines[NUMERO_BEM_GRANDE];
+	int lines[50];
 
 	Code codigo = (Code) malloc(NUMERO_BEM_GRANDE);
 
 	N_union number_to_write;
 
 	Line * iterador_lista = NULL;
-
-	iterador_lista = &ultimo;
 
 	cont_cod = initialize_code(codigo, lines);
 
@@ -441,7 +455,7 @@ funcp geracod(FILE* arq_fonte){
 		{
 			case 'r':
 			{
-				read_ret(arq_fonte, codigo, cont_cod, ordem_var_local);
+				cont_cod = read_ret(arq_fonte, codigo, cont_cod, ordem_var_local);
 				break;
 			}
 
@@ -460,40 +474,35 @@ funcp geracod(FILE* arq_fonte){
 
 		fscanf(arq_fonte, " ");
 
-		if( iterador_lista == NULL ){
-
+		if( iterador_lista != NULL ){
+			
 			if( iterador_lista->wanted_line <= line){
 
-				number_to_write.i = lines[line-1] - (iterador_lista->index_to_change) + 4;
+				number_to_write.i = lines[iterador_lista->wanted_line -1] - ((iterador_lista->index_to_change) + 4);
 
-			//esse for vai virar função
-				for(i=0, index_to_change; i<4; i++, index_to_change++)
-					codigo[index_to_change] = number_to_write.b[i];
+				write_number(codigo, iterador_lista->index_to_change , number_to_write);
+
+				iterador_lista = destroi_no(iterador_lista);
 			}
+			
+			/*
+			index_to_change = check_line( iterador_lista, line);
 
-
-			if( iterador_lista->wanted_line > line )
+			if( index_to_change != -1 )
 			{
-				index_to_change = check_line( iterador_lista, line);
+				number_to_write.i = lines[ iterador_lista->wanted_line -1] - (index_to_change + 4);
 
-				number_to_write.i = lines[line-1] - (index_to_change + 4);
-
-				for(i=0, index_to_change; i<4; i++, index_to_change++)
-					codigo[index_to_change] = number_to_write.b[i];
+				write_number(codigo, cont_cod , number_to_write);
+			
 			}
+			*/
 		}
 
 		line ++;	
 	}
 
-	return (funcp) codigo;
-}
 
-/*
-ifs_pendentes = { line_if_1, line_if_2 }
-
-struct line_if{
-	wanted_line
-	index_to_change
+	*NAO_ESQ_DE_TIRAR_ISSO = cont_cod;
+	return  codigo;
+	//return (funcp) codigo
 }
-*/

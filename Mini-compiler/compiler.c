@@ -16,32 +16,49 @@ typedef struct line_if{
 
 	int wanted_line;
 	int index_to_change;
-	int next_instruction;
 
+	struct line_if * ant;
 	struct line_if * prox;
 
 } Line;
 
-Line * cria_no ( Line * iterador_lista, int wanted_line, int index_to_change, int next_instruction)
+Line * cria_no ( Line * iterador_lista, int wanted_line, int index_to_change)
 {
 	Line * lista = (Line *) malloc(sizeof(Line));
 
 	lista->wanted_line = wanted_line;
 	lista->index_to_change = index_to_change;
-	lista->next_instruction = next_instruction;
 	lista->prox = iterador_lista;
+
+	iterador_lista->ant = lista;
 
 	return lista;
 }
 
 Line* destroi_no (Line * iterador_lista){
 
-	Line * temp = iterador_lista ;
+	Line * temp = iterador_lista->ant;
+	temp->prox = iterador_lista->prox;
 	free(iterador_lista);
-	iterador_lista = temp;
 
-	return iterador_lista;
+	return temp;
 }
+
+int check_line ( Line ** iterador_lista, int line){
+
+	int i;
+
+	if(iterador_lista == NULL)
+		return 0;
+
+	if(iterador_lista->wanted_line == line)
+	{	
+		i = iterador_lista->index_to_change;
+		iterador_lista = destroi_no(iterador_lista);
+		return i;
+	}
+}
+
 
 
 int initialize_code (Code codigo){
@@ -371,7 +388,7 @@ int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, 
 
 
 
-	*iterador_lista = cria_no( *iterador_lista, wanted_line, cont_cod, cont_cod+4);
+	*iterador_lista = cria_no( *iterador_lista, wanted_line, cont_cod);
 
 	/*Essa parte do código é o número da primeira instrução menos o número
 	da instrução imediatamente depois */
@@ -383,12 +400,12 @@ int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, 
 
 funcp geracod(FILE* arq_fonte){
 
-	int c, cont_cod,  ordem_var_local[5], cont_var_local = 0, line = 0;
+	int c, cont_cod,  ordem_var_local[5], cont_var_local = 0, line = 0, index_to_change;
 
 	Code codigo = (Code) malloc(NUMERO_BEM_GRANDE);
 
 	Line * iterador_lista;
-	Line ultimo = { -1 , 0 , 0, NULL};
+	Line ultimo = { -1 , 0 , NULL, NULL};
 
 	iterador_lista = &ultimo;
 
@@ -421,7 +438,16 @@ funcp geracod(FILE* arq_fonte){
 
 		if( iterador_lista->wanted_line != -1 ){
 
-			
+			if( iterador_lista->wanted_line <= line){
+				solve_problem;
+			}
+
+			if( iterador_lista->wanted_line > line )
+			{
+				index_to_change = check_line( &iterador_lista, line);
+
+			}
+
 		}
 		
 

@@ -35,31 +35,34 @@ Line * cria_no ( Line * iterador_lista, int wanted_line, int index_to_change){
 	return lista;
 }
 
-Line* destroi_no (Line * iterador_lista){
+Line* destroi_no(Line* iterador_lista, Line * node_to_delete){
 
-	Line * temp;
+	Line* lista = iterador_lista;
 
-	if(iterador_lista->ant != NULL)
-		iterador_lista->ant->prox = iterador_lista->prox;
-	if(iterador_lista->prox != NULL)
-		iterador_lista->prox->ant = iterador_lista->ant;
+	if(node_to_delete->ant != NULL)
+		node_to_delete->ant->prox = node_to_delete->prox;
+	else
+		lista = node_to_delete->prox;
 
-	free(iterador_lista);
-	return temp;
+
+	if(node_to_delete->prox != NULL)
+		node_to_delete->prox->ant = node_to_delete->ant;
+
+	free(node_to_delete);
+	
+	return lista;
 }
 
-int check_line ( Line * iterador_lista, int line){
+Line * check_line ( Line * iterador_lista, int line){
 
 	int i;
 
 	if( iterador_lista == NULL)
-		return -1;
+		return NULL;
 
 	if( iterador_lista->wanted_line == line)
 	{	
-		i = iterador_lista->index_to_change;
-		iterador_lista = destroi_no(iterador_lista);
-		return i;
+		return iterador_lista;
 	}
 
 	return check_line(iterador_lista-> prox, line);
@@ -435,9 +438,11 @@ int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, 
 
 funcp geracod(FILE* arq_fonte,int* NAO_ESQ_DE_TIRAR_ISSO){
 
-	int c, cont_cod,  ordem_var_local[5], cont_var_local = 0, line = 1, index_to_change;
+	int c, cont_cod,  ordem_var_local[5], cont_var_local = 0, line = 1;
 
 	int lines[50];
+
+	Line * structure_to_change;
 
 	Code codigo = (Code) malloc(NUMERO_BEM_GRANDE);
 
@@ -475,27 +480,19 @@ funcp geracod(FILE* arq_fonte,int* NAO_ESQ_DE_TIRAR_ISSO){
 		fscanf(arq_fonte, " ");
 
 		if( iterador_lista != NULL ){
-			
-			if( iterador_lista->wanted_line <= line){
 
-				number_to_write.i = lines[iterador_lista->wanted_line -1] - ((iterador_lista->index_to_change) + 4);
+			structure_to_change = check_line(iterador_lista, line);
 
-				write_number(codigo, iterador_lista->index_to_change , number_to_write);
-
-				iterador_lista = destroi_no(iterador_lista);
-			}
-			
-			/*
-			index_to_change = check_line( iterador_lista, line);
-
-			if( index_to_change != -1 )
+			if( structure_to_change != NULL )
 			{
-				number_to_write.i = lines[ iterador_lista->wanted_line -1] - (index_to_change + 4);
+				printf(">>>>>>> %d %d\n",lines[structure_to_change->wanted_line],((structure_to_change->index_to_change) + 4));
+				number_to_write.i = lines[structure_to_change->wanted_line ] - ((structure_to_change->index_to_change) + 4);
 
-				write_number(codigo, cont_cod , number_to_write);
-			
+				write_number(codigo, structure_to_change->index_to_change , number_to_write);
+
+				iterador_lista = destroi_no(iterador_lista, structure_to_change);
 			}
-			*/
+
 		}
 
 		line ++;	

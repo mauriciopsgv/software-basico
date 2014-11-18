@@ -12,6 +12,37 @@ typedef union num
 	unsigned char b[4];
 } N_union;
 
+typedef struct line_if{
+
+	int wanted_line;
+	int index_to_change;
+	int next_instruction;
+
+	struct line_if * prox;
+
+} Line;
+
+Line * cria_no ( Line * iterador_lista, int wanted_line, int index_to_change, int next_instruction)
+{
+	Line * lista = (Line *) malloc(sizeof(Line));
+
+	lista->wanted_line = wanted_line;
+	lista->index_to_change = index_to_change;
+	lista->next_instruction = next_instruction;
+	lista->prox = iterador_lista;
+
+	return lista;
+}
+
+Line* destroi_no (Line * iterador_lista){
+
+	Line * temp = iterador_lista ;
+	free(iterador_lista);
+	iterador_lista = temp;
+
+	return iterador_lista;
+}
+
 
 int initialize_code (Code codigo){
 
@@ -90,9 +121,7 @@ void read_ret (FILE* arq_fonte, Code codigo, int cont_cod, int* ordem_var_local)
 	}
 
 	finalize_code(codigo, cont_cod);
-
 }
-
 
 int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_local, int* cont_var_local){
 
@@ -233,14 +262,135 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 	}
 
 	return cont_cod;
-
 }
+
+int add_cmpl (Code codigo, int cont_cod){
+
+	codigo[cont_cod++] = 0x39;
+	codigo[cont_cod++] = 0xca;
+
+	return cont_cod;
+}
+
+int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, int * cont_var_local){
+
+	char c1, c2;
+	int wanted_line;
+	N_union o1, o2;
+
+	fscanf(arq_fonte, "feq %c%d %c%d %d", &c1, &o1.i, &c2, &o2.i, &wanted_line);
+
+	switch(c1){ //coloco em %ecx
+
+		case '$':
+		{
+			codigo[cont_cod++] = 0xb9;
+
+			for(i=0 , cont_cod; i<4; i++, cont_cod++)
+			{
+				codigo[cont_cod]= o1.b[i];
+			}
+			// quando sair desse for o contador ja estara pronto para ser indice 
+			// de um proximo uso no codigo
+			break;
+		}
+
+		case 'p':
+		{
+			codigo[cont_cod++] = 0x8b;
+			codigo[cont_cod++] = 0x4d;
+			codigo[cont_cod++] = (0x08 + (o1.i)*4 );
+			//cont_cod pronto pra acesso (valor do primeiro indice em branco)
+
+			break;
+		}
+
+		case 'v':
+		{
+			ordem = gibe_me_my_index(ordem_var_local, o1.i);
+
+			codigo[cont_cod++] = 0x8b;
+			codigo[cont_cod++] = 0x4d;
+			codigo[cont_cod++] = (0xfc - (ordem)*4 );
+
+			break;
+		}
+
+		default:
+			fprintf(stderr, "Simbolo invalido\n");
+	}
+
+	switch(c2){ // coloco em %edx
+
+
+		case '$':
+		{
+			codigo[cont_cod++] = 0xba;
+
+			for(i=0 , cont_cod; i<4; i++, cont_cod++)
+			{
+				codigo[cont_cod]= o2.b[i];
+			}
+			// quando sair desse for o contador ja estara pronto para ser indice 
+			// de um proximo uso no codigo
+			break;
+		}
+
+		case 'p':
+		{
+			codigo[cont_cod++] = 0x8b;
+			codigo[cont_cod++] = 0x55;
+			codigo[cont_cod++] = (0x08 + (o2.i)*4 );
+			//cont_cod pronto pra acesso (valor do primeiro indice em branco)
+			
+			break;
+		}
+
+		case 'v':
+		{
+			ordem = gibe_me_my_index(ordem_var_local, o2.i);
+
+			codigo[cont_cod++] = 0x8b;
+			codigo[cont_cod++] = 0x55;
+			codigo[cont_cod++] = (0xfc - (ordem)*4 );
+			break;
+		}
+
+		default:
+			fprintf(stderr, "Simbolo invalido\n");
+	}
+
+	cont_cod = add_cmpl(codigo,cont_cod);
+
+	codigo[cont_cod++] = 0x0f;
+	codigo[cont_cod++] = 0x84;
+	//codigo[cont_cod++] = 00;
+	//codigo[cont_cod++] = 00;
+	//codigo[cont_cod++] = 00;
+	//codigo[cont_cod++] = 00;
+
+
+
+	*iterador_lista = cria_no( *iterador_lista, wanted_line, cont_cod, cont_cod+4);
+
+	/*Essa parte do código é o número da primeira instrução menos o número
+	da instrução imediatamente depois */
+
+	return cont_cod;
+}
+
+
 
 funcp geracod(FILE* arq_fonte){
 
-	int c, cont_cod,  ordem_var_local[5], cont_var_local = 0;
+	int c, cont_cod,  ordem_var_local[5], cont_var_local = 0, line = 0;
 
 	Code codigo = (Code) malloc(NUMERO_BEM_GRANDE);
+
+	Line * iterador_lista;
+	Line ultimo = { -1 , 0 , 0, NULL};
+
+	iterador_lista = &ultimo;
 
 	cont_cod = initialize_code(codigo);
 
@@ -257,12 +407,49 @@ funcp geracod(FILE* arq_fonte){
 			case 'v': case 'p':
 			{
 				cont_cod = read_att(arq_fonte, codigo, cont_cod, c, ordem_var_local, &cont_var_local);
+				break;
+			}
+
+			case 'i':
+			{
+				cont_cod = read_if(arq_fonte, codigo, cont_cod, ordem_var_local, & cont_var_local);
+				break;
 			}
 		}
 
 		fscanf(arq_fonte, " ");
+
+		if( iterador_lista->wanted_line != -1 ){
+
+			
+		}
+		
+
+		/*typedef struct line_if{
+
+	int wanted_line;
+	int index_to_change;
+	int next_instruction;
+
+	struct line_if * prox;
+*/
+
+
+
+
+		line ++;
+	
 	}
 	
 
 	return (funcp) codigo;
 }
+
+/*
+ifs_pendentes = { line_if_1, line_if_2 }
+
+struct line_if{
+	wanted_line
+	index_to_change
+}
+*/

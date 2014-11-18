@@ -48,13 +48,13 @@ int check_line ( Line ** iterador_lista, int line){
 
 	int i;
 
-	if(iterador_lista == NULL)
+	if( (*iterador_lista) == NULL)
 		return 0;
 
-	if(iterador_lista->wanted_line == line)
+	if( (*iterador_lista)->wanted_line == line)
 	{	
-		i = iterador_lista->index_to_change;
-		iterador_lista = destroi_no(iterador_lista);
+		i = (*iterador_lista)->index_to_change;
+		(*iterador_lista) = destroi_no((*iterador_lista));
 		return i;
 	}
 }
@@ -289,10 +289,10 @@ int add_cmpl (Code codigo, int cont_cod){
 	return cont_cod;
 }
 
-int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, int * cont_var_local){
+int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, int * cont_var_local, Line** iterador_lista){
 
 	char c1, c2;
-	int wanted_line;
+	int i, ordem, wanted_line;
 	N_union o1, o2;
 
 	fscanf(arq_fonte, "feq %c%d %c%d %d", &c1, &o1.i, &c2, &o2.i, &wanted_line);
@@ -404,7 +404,7 @@ funcp geracod(FILE* arq_fonte){
 
 	Code codigo = (Code) malloc(NUMERO_BEM_GRANDE);
 
-	Line * iterador_lista;
+	Line * iterador_lista, *percorre_lista;
 	Line ultimo = { -1 , 0 , NULL, NULL};
 
 	iterador_lista = &ultimo;
@@ -429,7 +429,7 @@ funcp geracod(FILE* arq_fonte){
 
 			case 'i':
 			{
-				cont_cod = read_if(arq_fonte, codigo, cont_cod, ordem_var_local, & cont_var_local);
+				cont_cod = read_if(arq_fonte, codigo, cont_cod, ordem_var_local, & cont_var_local, &iterador_lista);
 				break;
 			}
 		}
@@ -439,15 +439,16 @@ funcp geracod(FILE* arq_fonte){
 		if( iterador_lista->wanted_line != -1 ){
 
 			if( iterador_lista->wanted_line <= line){
-				solve_problem;
 			}
 
-			if( iterador_lista->wanted_line > line )
+			percorre_lista = iterador_lista;
+			while( percorre_lista->wanted_line != ultimo.wanted_line)
 			{
-				index_to_change = check_line( &iterador_lista, line);
-
+				if( iterador_lista->wanted_line > line )
+				{
+					index_to_change = check_line( &iterador_lista, line);
+				}
 			}
-
 		}
 		
 

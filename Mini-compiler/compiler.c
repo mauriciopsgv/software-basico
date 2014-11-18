@@ -26,46 +26,65 @@ Line * cria_no ( Line * iterador_lista, int wanted_line, int index_to_change)
 {
 	Line * lista = (Line *) malloc(sizeof(Line));
 
+	if(iterador_lista != NULL)
+		iterador_lista->ant = lista;
+
 	lista->wanted_line = wanted_line;
 	lista->index_to_change = index_to_change;
 	lista->prox = iterador_lista;
-
-	iterador_lista->ant = lista;
 
 	return lista;
 }
 
 Line* destroi_no (Line * iterador_lista){
 
-	Line * temp = iterador_lista->ant;
-	temp->prox = iterador_lista->prox;
-	free(iterador_lista);
+	Line * temp;
+
+	if( iterador_lista->ant == NULL)
+	{
+		temp = iterador_lista->prox;
+		temp->ant = NULL;
+		free(iterador_lista)
+	}
+	else
+	{
+		temp = iterador_lista->ant;
+		temp->prox = iterador_lista->prox;
+		free(iterador_lista);
+	}
 
 	return temp;
 }
 
-int check_line ( Line ** iterador_lista, int line){
+int check_line ( Line * iterador_lista, int line){
 
 	int i;
 
-	if( (*iterador_lista) == NULL)
+	if( iterador_lista == NULL)
 		return 0;
 
-	if( (*iterador_lista)->wanted_line == line)
+	if( iterador_lista->wanted_line == line)
 	{	
-		i = (*iterador_lista)->index_to_change;
-		(*iterador_lista) = destroi_no((*iterador_lista));
+		i = iterador_lista->index_to_change;
+		iterador_lista = destroi_no(iterador_lista);
 		return i;
 	}
+
+	check_line( iterador_lista-> prox, line);
 }
 
 
 
-int initialize_code (Code codigo){
+int initialize_code (Code codigo, int * lines){
 
 	codigo[0] = 0x55;							// push %ebp
+	lines[0] = 0;
+	
 	codigo[1] = 0x89; 	codigo[2] = 0xe5;		// mov %esp, %ebp
+	lines[1] = 1;
+
 	codigo[3] = 0x83;	codigo[4] = 0xec;	codigo[5] = 0x14;
+	lines[2] = 3;
 
 	return 6;
 }
@@ -400,18 +419,23 @@ int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, 
 
 funcp geracod(FILE* arq_fonte){
 
-	int c, cont_cod,  ordem_var_local[5], cont_var_local = 0, line = 0, index_to_change;
+	int i, c, cont_cod,  ordem_var_local[5], cont_var_local = 0, line = 3, index_to_change;
+
+	int lines[NUMERO_BEM_GRANDE];
 
 	Code codigo = (Code) malloc(NUMERO_BEM_GRANDE);
 
-	Line * iterador_lista, *percorre_lista;
-	Line ultimo = { -1 , 0 , NULL, NULL};
+	N_union number_to_write;
+
+	Line * iterador_lista = NULL;
 
 	iterador_lista = &ultimo;
 
-	cont_cod = initialize_code(codigo);
+	cont_cod = initialize_code(codigo, lines);
 
 	while ((c = fgetc(arq_fonte)) != EOF){
+
+		lines[line] = cont_cod;
 
 		switch(c)
 		{
@@ -436,38 +460,31 @@ funcp geracod(FILE* arq_fonte){
 
 		fscanf(arq_fonte, " ");
 
-		if( iterador_lista->wanted_line != -1 ){
+		if( iterador_lista == NULL ){
 
 			if( iterador_lista->wanted_line <= line){
+
+				number_to_write.i = lines[line-1] - (iterador_lista->index_to_change) + 4;
+
+			//esse for vai virar função
+				for(i=0, index_to_change; i<4; i++, index_to_change++)
+					codigo[index_to_change] = number_to_write.b[i];
 			}
 
-			percorre_lista = iterador_lista;
-			while( percorre_lista->wanted_line != ultimo.wanted_line)
+
+			if( iterador_lista->wanted_line > line )
 			{
-				if( iterador_lista->wanted_line > line )
-				{
-					index_to_change = check_line( &iterador_lista, line);
-				}
+				index_to_change = check_line( iterador_lista, line);
+
+				number_to_write.i = lines[line-1] - (index_to_change + 4);
+
+				for(i=0, index_to_change; i<4; i++, index_to_change++)
+					codigo[index_to_change] = number_to_write.b[i];
 			}
 		}
-		
 
-		/*typedef struct line_if{
-
-	int wanted_line;
-	int index_to_change;
-	int next_instruction;
-
-	struct line_if * prox;
-*/
-
-
-
-
-		line ++;
-	
+		line ++;	
 	}
-	
 
 	return (funcp) codigo;
 }

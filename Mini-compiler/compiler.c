@@ -280,7 +280,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 		case '-':
 		{
 			codigo[cont_cod++] = 0x29;
-			codigo[cont_cod++] = 0xca; //codigo[cont_cod++] = 0xd1
+			codigo[cont_cod++] = 0xd1;
 			break;
 		}
 
@@ -301,7 +301,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 		case 'p':
 		{
 			codigo[cont_cod++] = 0x89;
-			codigo[cont_cod++] = 0x55;
+			codigo[cont_cod++] = 0x4d;
 			codigo[cont_cod++] = (0x08 + (o.i)*4 );
 			break;
 		}

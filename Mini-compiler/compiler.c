@@ -23,6 +23,7 @@ typedef struct line_if{
 } Line;
 
 Line * cria_no ( Line * iterador_lista, int wanted_line, int index_to_change){
+	
 	Line * lista = (Line *) malloc(sizeof(Line));
 
 	if(iterador_lista != NULL)
@@ -36,11 +37,11 @@ Line * cria_no ( Line * iterador_lista, int wanted_line, int index_to_change){
 	return lista;
 }
 
-void printList(Line* l)
+void printList(Line* l, int line, int no)
 {
-	if(!l)return;
-	printf("%d %d->",l->wanted_line,l->index_to_change);
-	printList(l->prox);
+	if(l==NULL)return;
+	printf("No %d-> %d %d\n", no, l->wanted_line,l->index_to_change);
+	printList(l->prox, line -1, no +1);
 }
 
 Line* destroi_no(Line* iterador_lista, Line * node_to_delete){
@@ -63,12 +64,10 @@ Line* destroi_no(Line* iterador_lista, Line * node_to_delete){
 
 Line * check_line ( Line * iterador_lista, int line){
 
-	int i;
-
 	if( iterador_lista == NULL)
 		return NULL;
 
-	if( iterador_lista->wanted_line == line)
+	if( iterador_lista->wanted_line <= line)
 	{	
 		return iterador_lista;
 	}
@@ -281,7 +280,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 		case '-':
 		{
 			codigo[cont_cod++] = 0x29;
-			codigo[cont_cod++] = 0xd1;
+			codigo[cont_cod++] = 0xca; //codigo[cont_cod++] = 0xd1
 			break;
 		}
 
@@ -302,8 +301,9 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 		case 'p':
 		{
 			codigo[cont_cod++] = 0x89;
-			codigo[cont_cod++] = 0x4d;
+			codigo[cont_cod++] = 0x55;
 			codigo[cont_cod++] = (0x08 + (o.i)*4 );
+			break;
 		}
 
 		case 'v':
@@ -313,7 +313,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 			if(ordem == -1){
 				codigo[cont_cod++] = 0x89;
 				codigo[cont_cod++] = 0x4d;
-				codigo[cont_cod++] = 0xfc - 4*(*cont_var_local); //precisa mudar isso
+				codigo[cont_cod++] = 0xfc;
 				ordem_var_local[(*cont_var_local)++] = o.i;
 			}
 
@@ -323,6 +323,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 				codigo[cont_cod++] = 0x4d;
 				codigo[cont_cod++] = 0xfc - 4*(ordem); //precisa mudar isso
 			}
+			break;
 		}
 	}
 
@@ -339,7 +340,6 @@ int add_cmpl (Code codigo, int cont_cod){
 
 int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, int * cont_var_local, Line** iterador_lista){
 
-	int i;
 	char c1, c2;
 	int ordem, wanted_line;
 	N_union o1, o2;
@@ -446,11 +446,14 @@ int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, 
 
 funcp geracod(FILE* arq_fonte,int* NAO_ESQ_DE_TIRAR_ISSO){
 
-	int c, cont_cod,  ordem_var_local[5], cont_var_local = 0, line = 1;
+	int c, cont_cod, cont_var_local = 0, line = 1;
+
+	int ordem_var_local[5] = {-1,-1,-1,-1,-1};
 
 	int lines[50];
 
-	Line * structure_to_change;
+	Line * structure_to_change = NULL;
+	Line * temp;
 
 	Code codigo = (Code) malloc(NUMERO_BEM_GRANDE);
 
@@ -486,26 +489,36 @@ funcp geracod(FILE* arq_fonte,int* NAO_ESQ_DE_TIRAR_ISSO){
 		}
 
 		fscanf(arq_fonte, " ");
+		
+		printList(iterador_lista, line, 1);
 
-		printList(iterador_lista);
+		printf("\n");
+		
 		if( iterador_lista != NULL ){
 
-			structure_to_change = check_line(iterador_lista, line);
+			temp = iterador_lista;
+			structure_to_change = check_line(temp, line);
+			
 
-			if( structure_to_change != NULL )
-			{
-				printf(">>>>>>> %d %d\n",lines[structure_to_change->wanted_line],((structure_to_change->index_to_change) + 4));
+			while ( structure_to_change != NULL){
+
+				printf("entrei");
+				printf("\n>>>>>>> %d %d\n\n",lines[structure_to_change->wanted_line],((structure_to_change->index_to_change) + 4));
 
 
-				number_to_write.i = lines[structure_to_change->wanted_line ] - ((structure_to_change->index_to_change) + 4);
+				number_to_write.i = lines[structure_to_change->wanted_line] - ((structure_to_change->index_to_change) + 4);
 
 				write_number(codigo, structure_to_change->index_to_change , number_to_write);
 
 				iterador_lista = destroi_no(iterador_lista, structure_to_change);
+			
+				temp = iterador_lista;
+
+				structure_to_change = check_line(temp, line);
 			}
 
 		}
-
+		printf("%d", line);
 		line ++;	
 	}
 
@@ -514,3 +527,12 @@ funcp geracod(FILE* arq_fonte,int* NAO_ESQ_DE_TIRAR_ISSO){
 	return  codigo;
 	//return (funcp) codigo
 }
+
+/*
+v0 := $0 + $1 
+ifeq p0 $0 6
+v0 := v0 * p0 
+p0 := p0 - $1 
+ifeq $1 $1 2
+ret v0
+*/

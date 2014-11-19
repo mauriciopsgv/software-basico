@@ -37,13 +37,6 @@ Line * cria_no ( Line * iterador_lista, int wanted_line, int index_to_change){
 	return lista;
 }
 
-void printList(Line* l, int line, int no)
-{
-	if(l==NULL)return;
-	printf("No %d-> %d %d\n", no, l->wanted_line,l->index_to_change);
-	printList(l->prox, line -1, no +1);
-}
-
 Line* destroi_no(Line* iterador_lista, Line * node_to_delete){
 
 	Line* lista = iterador_lista;
@@ -87,9 +80,9 @@ int write_number (Code codigo, int index_to_change, N_union number_to_write)
 
 int initialize_code (Code codigo, int * lines){
 
-	codigo[0] = 0x55;							// push %ebp
-	codigo[1] = 0x89; 	codigo[2] = 0xe5;		// mov %esp, %ebp
-	codigo[3] = 0x83;	codigo[4] = 0xec;	codigo[5] = 0x14;
+	codigo[0] = 0x55;											// push %ebp
+	codigo[1] = 0x89; 	codigo[2] = 0xe5;						// mov %esp, %ebp
+	codigo[3] = 0x83;	codigo[4] = 0xec;	codigo[5] = 0x14;	// subl $20, %esp
 
 	return 6;
 }
@@ -117,8 +110,7 @@ int gibe_me_my_index ( int * ordem_var_local, int n){
 
 int read_ret (FILE* arq_fonte, Code codigo, int cont_cod, int* ordem_var_local){
 
-	int i;
-	int ordem;
+	int i, ordem;
 	char c;
 	N_union num;
 	fscanf( arq_fonte, "et %c%d", &c, &num.i );
@@ -170,11 +162,9 @@ int read_ret (FILE* arq_fonte, Code codigo, int cont_cod, int* ordem_var_local){
 
 int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_local, int* cont_var_local){
 
-	int i;
-	int ordem;
-	char c1,c2, op;
+	int i, ordem;
+	char c1, c2, op;
 	N_union o, o1, o2;
-
 
 	fscanf(arq_fonte, "%d := %c%d %c %c%d", &o.i, &c1, &o1.i, &op , &c2, &o2.i);
 
@@ -332,8 +322,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 
 int add_cmpl (Code codigo, int cont_cod){
 
-	codigo[cont_cod++] = 0x39;
-	codigo[cont_cod++] = 0xca;
+	codigo[cont_cod++] = 0x39;		codigo[cont_cod++] = 0xca;  // cmpl %ecd,	%edx
 
 	return cont_cod;
 }
@@ -436,15 +425,12 @@ int read_if( FILE* arq_fonte, Code codigo, int cont_cod, int * ordem_var_local, 
 
 	*iterador_lista = cria_no( *iterador_lista, wanted_line, cont_cod);
 
-	/*Essa parte do código é o número da primeira instrução menos o número
-	da instrução imediatamente depois */
-
 	return cont_cod + 4;
 }
 
 
 
-funcp geracod(FILE* arq_fonte,int* NAO_ESQ_DE_TIRAR_ISSO){
+funcp geracod(FILE* arq_fonte){
 
 	int c, cont_cod, cont_var_local = 0, line = 1;
 
@@ -490,10 +476,6 @@ funcp geracod(FILE* arq_fonte,int* NAO_ESQ_DE_TIRAR_ISSO){
 
 		fscanf(arq_fonte, " ");
 		
-		printList(iterador_lista, line, 1);
-
-		printf("\n");
-		
 		if( iterador_lista != NULL ){
 
 			temp = iterador_lista;
@@ -501,10 +483,6 @@ funcp geracod(FILE* arq_fonte,int* NAO_ESQ_DE_TIRAR_ISSO){
 			
 
 			while ( structure_to_change != NULL){
-
-				printf("entrei");
-				printf("\n>>>>>>> %d %d\n\n",lines[structure_to_change->wanted_line],((structure_to_change->index_to_change) + 4));
-
 
 				number_to_write.i = lines[structure_to_change->wanted_line] - ((structure_to_change->index_to_change) + 4);
 
@@ -518,21 +496,10 @@ funcp geracod(FILE* arq_fonte,int* NAO_ESQ_DE_TIRAR_ISSO){
 			}
 
 		}
-		printf("%d", line);
 		line ++;	
 	}
 
 
-	*NAO_ESQ_DE_TIRAR_ISSO = cont_cod;
-	return  codigo;
-	//return (funcp) codigo
-}
+	return (funcp) codigo;
 
-/*
-v0 := $0 + $1 
-ifeq p0 $0 6
-v0 := v0 * p0 
-p0 := p0 - $1 
-ifeq $1 $1 2
-ret v0
-*/
+}

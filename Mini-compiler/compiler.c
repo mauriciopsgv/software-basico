@@ -1,3 +1,6 @@
+/* Maurício Pedro Silva Gonçalves Vieira 1311101 33wb */
+/* Victor Augusto Lima Lins de Souza	 1310784 33wb */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "compiler.h"
@@ -110,7 +113,7 @@ int gibe_me_my_index ( int * ordem_var_local, int n){
 
 int read_ret (FILE* arq_fonte, Code codigo, int cont_cod, int* ordem_var_local){
 
-	int i, ordem;
+	int ordem;
 	char c;
 	N_union num;
 	fscanf( arq_fonte, "et %c%d", &c, &num.i );
@@ -121,12 +124,7 @@ int read_ret (FILE* arq_fonte, Code codigo, int cont_cod, int* ordem_var_local){
 		{
 			codigo[cont_cod++] = 0xb8;
 
-//			cont_cod = write_number(codigo, cont_cod , num);
-
-			for(i=0 , cont_cod; i<4; i++, cont_cod++)
-			{
-				codigo[cont_cod]= num.b[i];
-			}
+			cont_cod = write_number(codigo, cont_cod , num);
 
 			break;
 			//cont_cod = ultimo indice que imprimiu + 1 quando sai daqui
@@ -162,7 +160,7 @@ int read_ret (FILE* arq_fonte, Code codigo, int cont_cod, int* ordem_var_local){
 
 int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_local, int* cont_var_local){
 
-	int i, ordem;
+	int ordem;
 	char c1, c2, op;
 	N_union o, o1, o2;
 
@@ -174,16 +172,8 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 		{
 			codigo[cont_cod++] = 0xb9;
 
-//			cont_cod = write_number(codigo, cont_cod , o1);
-
-			for(i=0 , cont_cod; i<4; i++, cont_cod++)
-			{
-				codigo[cont_cod]= o1.b[i];
-			}
-			
-			// quando sair desse for o contador ja estara pronto para ser indice 
-			// de um proximo uso no codigo
-			
+			cont_cod = write_number(codigo, cont_cod , o1);
+		
 			break;
 		}
 
@@ -220,12 +210,7 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 		{
 			codigo[cont_cod++] = 0xba;
 
-//			cont_cod = write_number(codigo, cont_cod , o2);
-
-			for(i=0 , cont_cod; i<4; i++, cont_cod++)
-			{
-				codigo[cont_cod]= o2.b[i];
-			}
+			cont_cod = write_number(codigo, cont_cod , o2);
 
 			// quando sair desse for o contador ja estara pronto para ser indice 
 			// de um proximo uso no codigo

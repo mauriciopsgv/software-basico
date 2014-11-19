@@ -105,7 +105,9 @@ int gibe_me_my_index ( int * ordem_var_local, int n){
 	for(i=0; i < NUM_VAR_LOCAIS ; i++)
 	{
 		if( ordem_var_local[i] == n)
-			return i;		
+			return i;
+		if( ordem_var_local[i] < 0)
+			return i;
 	}
 
 	return -1;
@@ -285,19 +287,10 @@ int read_att (FILE* arq_fonte, Code codigo, int cont_cod, int c, int* ordem_var_
 		{
 			ordem = gibe_me_my_index(ordem_var_local, o.i);
 
-			if(ordem == -1){
-				codigo[cont_cod++] = 0x89;
-				codigo[cont_cod++] = 0x4d;
-				codigo[cont_cod++] = 0xfc;
-				ordem_var_local[(*cont_var_local)++] = o.i;
-			}
-
-			else
-			{
-				codigo[cont_cod++] = 0x89;
-				codigo[cont_cod++] = 0x4d;
-				codigo[cont_cod++] = 0xfc - 4*(ordem); //precisa mudar isso
-			}
+			codigo[cont_cod++] = 0x89;
+			codigo[cont_cod++] = 0x4d;
+			codigo[cont_cod++] = 0xfc - 4*(ordem);
+			ordem_var_local[ordem] = o.i;
 			break;
 		}
 	}

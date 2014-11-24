@@ -1,0 +1,121 @@
+Mauricio Pedro Silva Gonçalves Vieira
+Victor Augusto Lima Lins de Souza
+
+Tudo funciona perfeitamente, os exemplos de função na linguagem Minima abaixo foram todos testados e apresentaram a resposta esperada
+
+
+
+Exemplo 1
+
+v0 := $0 + $0
+v1 := p0 - p2
+v2 := p2 * v1
+v3 := v2 + p2
+v4 := p3 - p3
+ret v4
+
+Exemplo 2
+
+(a)
+v0 := $0 + $0
+v1 := p0 - p2
+v2 := p2 * v1
+v3 := v2 + p2
+v4 := p3 - p3
+ret v1
+
+(b)
+v0 := $0 + $0
+v1 := p0 - p2
+v2 := p2 * v1
+v3 := v2 + p2
+v4 := p3 - p3
+ret v2
+
+(c)
+v0 := $0 + $0
+v1 := p0 - p2
+v2 := p2 * v1
+v3 := v2 + p2
+v4 := p3 - p3
+ret v3
+
+(d)
+v0 := $0 + $0
+v1 := p0 - p2
+v2 := p2 * v1
+v3 := v2 + p2
+v4 := p3 - p3
+ret v4
+
+Exemplo 3
+
+v0 := $0 + $0
+v1 := p0 - p2
+v2 := p2 * v1
+v3 := v2 + p2
+v4 := v3 - p3
+ret v4
+
+Exemplo 4
+
+v0 := p0 * p1
+ret v0
+
+Exemplo 5
+
+ifeq p0 p1 3
+ret $0
+ret $1
+
+Exemplo 6
+
+v0 := $0 + $1
+ifeq p0 $0 6
+v0 := v0 * p0
+p0 := p0 - $1
+ifeq $1 $1 2
+ret v0
+
+Exemplo 7
+
+v4 := $3 + p0
+v3 := $0 + $1
+ifeq p0 $0 7
+v3 := v3 * p0
+p0 := p0 - $1
+ifeq $1 $1 3
+ret v3
+
+Exemplo 8
+
+p0 := p0 + p1
+ret p0
+
+Exemplo 9
+
+p0 := p0 + p1
+ret $7
+
+Exemplo 10
+
+v1 := $4 + $5
+v4 := v1 - $3
+v3 := $2 * $3
+v2 := $1 + $-4
+v3 := v3 - $1
+ifeq $-3 v3 8
+ifeq p0 $-3 4
+ifeq v3 v2 10
+ret $0
+ret $1
+
+Exemplo 11
+
+p0 := p0 - $-3
+ret p0
+
+Exemplo 12
+
+p0 := p0 + $-3
+ret p0
